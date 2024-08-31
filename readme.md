@@ -16,6 +16,10 @@ Say goodbye to context-switching and hello to uninterrupted productivity! `runTA
 - **Transparency Options**: Create a distraction-free coding environment with optional transparency settings for the floating window. Focus on your code, not on unnecessary distractions.
 - **Automatic Language Detection**: It automatically detects the language of current buffer and run code accordingly.
 
+- **Languages Currently Supported**:
+  - c
+  - c++
+
 ## Installation
 
 Getting started with `runTA.nvim` is easy! Simply install it using your favorite plugin manager. For example, with [packer.nvim](https://github.com/wbthomason/packer.nvim), add the following line to your configuration:
