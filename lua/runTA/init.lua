@@ -9,8 +9,8 @@ local function setup_runTA()
 			custom_col = nil, -- Column position for custom placement (optional)
 			custom_row = nil, -- Row position for custom placement (optional)
 
-			bg_color = "Normal", -- Background color (e.g., "Normal", "None" for transparent)
-			border_color = "None", -- Border color (e.g., "Normal", "None" for no color)
+			bg_color = "None", -- Use "None" for transparency or a valid highlight group
+			border_color = "None", -- Use "None" for no color or a valid highlight group
 			transparency = 0, -- Transparency (set a value between 0-100)
 		},
 	})
