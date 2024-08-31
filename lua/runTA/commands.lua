@@ -41,7 +41,7 @@ local function create_floating_term(config)
 
 	-- Create the floating terminal window
 	local buf = vim.api.nvim_create_buf(false, true)
-	local win = vim.api.nvim_open_win(buf, true, {
+	vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
 		width = width,
 		height = height,
@@ -51,26 +51,21 @@ local function create_floating_term(config)
 		border = "rounded",
 	})
 
-	-- Apply background color, border color, and transparency
-	local bg_color = window_configs.bg_color or "None"
-	local border_color = window_configs.border_color or "None"
+	-- Apply transparency settings
+	local transparent = window_configs.transparent or false
 	local transparency = window_configs.transparency or 0
 
 	-- Set transparency (winblend)
-	vim.api.nvim_set_option_value("winblend", transparency, { scope = "local" })
-
-	-- Set highlight groups
-	vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
-	if border_color ~= "None" then
-		vim.api.nvim_set_hl(0, "FloatBorder", { fg = border_color })
+	if transparent then
+		vim.api.nvim_set_option_value("winblend", transparency, { scope = "local" })
+	else
+		vim.api.nvim_set_option_value("winblend", 0, { scope = "local" })
 	end
 
-	-- Apply highlights to the floating window
-	vim.api.nvim_set_option_value(
-		"winhighlight",
-		"Normal:FloatingWindow,FloatBorder:" .. (border_color ~= "None" and border_color or "Normal"),
-		{ scope = "local" }
-	)
+	-- Remove highlight settings as they are no longer needed
+	-- vim.api.nvim_set_hl(0, "FloatingWindow", { bg = "None" })
+	-- vim.api.nvim_set_hl(0, "FloatBorder", { fg = "None" })
+	vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:Normal", { scope = "local" })
 
 	return buf
 end
@@ -98,27 +93,25 @@ local function run_code()
 		return
 	end
 
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:" })
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:\n" })
 
 	vim.fn.jobstart(command, {
 		on_stdout = function(_, data, _)
 			if data then
-				-- Split data into lines and set them in the buffer
-				local lines = type(data) == "string" and vim.split(data, "\n") or data
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
+				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
 			end
 		end,
 		on_stderr = function(_, data, _)
 			if data then
-				-- Split data into lines and set them in the buffer
-				local lines = type(data) == "string" and vim.split(data, "\n") or data
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
+				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
 			end
 		end,
 		on_exit = function(_, code, _)
-			local exit_message = code == 0 and "Execution finished successfully"
-				or "Execution failed with code " .. code
-			vim.api.nvim_buf_set_lines(buf, -1, -1, false, { exit_message })
+			if code == 0 then
+				vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Execution finished successfully" })
+			else
+				vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Execution failed with code " .. code })
+			end
 		end,
 		stdout_buffered = true,
 		stderr_buffered = true,
