@@ -52,8 +52,8 @@ local function create_floating_term(config)
 	})
 
 	-- Apply background color, border color, and transparency
-	local bg_color = window_configs.bg_color or "Normal"
-	local border_color = window_configs.border_color or "None"
+	local bg_color = window_configs.bg_color or "None" -- Default to "None" for transparent
+	local border_color = window_configs.border_color or "None" -- Default to "None"
 	local transparency = window_configs.transparency or 0
 
 	-- Set transparency (winblend)
@@ -62,14 +62,20 @@ local function create_floating_term(config)
 	-- Set highlight groups
 	if bg_color ~= "None" then
 		vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
+	else
+		-- Ensure transparency if bg_color is "None"
+		vim.api.nvim_set_hl(0, "FloatingWindow", { bg = "none" })
 	end
 	if border_color ~= "None" then
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = border_color })
 	end
 
 	-- Apply highlights to the floating window
-	local winhighlight = "Normal:FloatingWindow,FloatBorder:" .. (border_color ~= "None" and border_color or "Normal")
-	vim.api.nvim_set_option_value("winhighlight", winhighlight, { scope = "local" })
+	vim.api.nvim_set_option_value(
+		"winhighlight",
+		"Normal:FloatingWindow,FloatBorder:" .. (border_color ~= "None" and border_color or "Normal"),
+		{ scope = "local" }
+	)
 
 	return buf
 end
