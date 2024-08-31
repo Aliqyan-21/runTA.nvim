@@ -57,13 +57,6 @@ local function create_floating_term(config)
 	-- Set transparency (winblend)
 	vim.api.nvim_set_option_value("winblend", (not transparent) and 20 or 0, { scope = "local" })
 
-	-- Set window highlight groups to ensure no transparency
-	vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:Normal", { scope = "local" })
-
-	-- Explicitly set the background color if needed
-	vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
-	vim.api.nvim_set_hl(0, "FloatBorder", { fg = "none" })
-
 	return buf
 end
 
