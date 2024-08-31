@@ -100,7 +100,7 @@ local function run_code()
 		command = "go run " .. filename
 	elseif ft == "rust" then
 		command = "rustc -o temp " .. filename .. " && ./temp"
-	elseif ft == "bash" then
+	elseif ft == "sh" then
 		command = "bash " .. filename
 	elseif ft == "r" then
 		command = "Rscript " .. filename
