@@ -29,6 +29,22 @@ local function create_floating_term(config)
 	if position == "center" then
 		col = math.floor((vim.o.columns - width) / 2)
 		row = math.floor((vim.o.lines - height) / 2)
+	elseif position == "bottom" then
+		col = math.floor((vim.o.columns - width) / 2)
+		row = vim.o.lines - height - 1
+	elseif position == "top" then
+		col = math.floor((vim.o.columns - width) / 2)
+		row = 0
+	elseif position == "right" then
+		col = vim.o.columns - width - 1
+		row = math.floor((vim.o.lines - height) / 2)
+	elseif position == "left" then
+		col = 0
+		row = math.floor((vim.o.lines - height) / 2)
+	elseif position == "custom" then
+		-- Handle custom positions with default values if not provided
+		col = window_configs.custom_col or math.floor((vim.o.columns - width) / 2)
+		row = window_configs.custom_row or math.floor((vim.o.lines - height) / 2)
 	else
 		vim.api.nvim_err_writeln("Invalid position: " .. position)
 		return
