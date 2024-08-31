@@ -21,6 +21,19 @@ Say goodbye to context-switching and hello to uninterrupted productivity! `runTA
   - c++
   - Python
   - Java
+  - JavaScript
+  - TypeScript
+  - Ruby
+  - Lua
+  - Go
+  - Rust
+  - Perl
+  - PHP
+  - Bash
+  - R
+  - Swift
+  - Haskell
+  - Kotlin
 
 ## Installation
 
