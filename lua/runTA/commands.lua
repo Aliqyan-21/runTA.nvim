@@ -2,9 +2,11 @@ local M = {}
 
 local function create_floating_term(config)
 	config = config or {}
-	local width = config.width or 80
-	local height = config.height or 20
-	local position = config.position or "center"
+	local window_configs = config.output_window_configs or {}
+
+	local width = window_configs.width or 80
+	local height = window_configs.height or 20
+	local position = window_configs.position or "center"
 
 	local col, row
 
@@ -26,24 +28,19 @@ local function create_floating_term(config)
 		row = math.floor((vim.o.lines - height) / 2)
 	elseif position == "custom" then
 		-- Handle custom positions with default values if not provided
-		col = config.custom_col or math.floor((vim.o.columns - width) / 2)
-		row = config.custom_row or math.floor((vim.o.lines - height) / 2)
+		col = window_configs.custom_col or math.floor((vim.o.columns - width) / 2)
+		row = window_configs.custom_row or math.floor((vim.o.lines - height) / 2)
 	else
 		vim.api.nvim_err_writeln("Invalid position: " .. position)
-		return nil
+		return
 	end
 
-	-- Ensure col and row are valid integers
-	col = math.max(col or 0, 0)
-	row = math.max(row or 0, 0)
+	-- Ensure col and row are integers
+	col = col or 0
+	row = row or 0
 
 	-- Create the floating terminal window
 	local buf = vim.api.nvim_create_buf(false, true)
-	if not buf then
-		vim.api.nvim_err_writeln("Failed to create buffer")
-		return nil
-	end
-
 	vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
 		width = width,
@@ -75,20 +72,16 @@ local function run_code()
 	local config = vim.g.runTA_config or {}
 
 	local buf = create_floating_term(config)
-	if not buf then
-		return
-	end
-
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Running code..." })
 
 	vim.fn.jobstart(command, {
 		on_stdout = function(_, data, _)
-			if data and #data > 0 then
+			if data then
 				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
 			end
 		end,
 		on_stderr = function(_, data, _)
-			if data and #data > 0 then
+			if data then
 				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
 			end
 		end,
