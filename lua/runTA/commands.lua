@@ -51,6 +51,27 @@ local function create_floating_term(config)
 		border = "rounded",
 	})
 
+	-- Apply background color, border color, and transparency
+	local bg_color = window_configs.bg_color or "Normal"
+	local border_color = window_configs.border_color or "None"
+	local transparency = window_configs.transparency or 0
+
+	-- Set transparency (winblend)
+	vim.api.nvim_set_option_value("winblend", transparency, { scope = "local" })
+
+	-- Set highlight groups
+	vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
+	if border_color ~= "None" then
+		vim.api.nvim_set_hl(0, "FloatBorder", { fg = border_color })
+	end
+
+	-- Apply highlights to the floating window
+	vim.api.nvim_set_option_value(
+		"winhighlight",
+		"Normal:FloatingWindow,FloatBorder:" .. (border_color ~= "None" and border_color or "Normal"),
+		{ scope = "local" }
+	)
+
 	return buf
 end
 
@@ -72,7 +93,12 @@ local function run_code()
 	local config = vim.g.runTA_config or {}
 
 	local buf = create_floating_term(config)
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Running code..." })
+
+	if not buf then
+		return
+	end
+
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:\n" })
 
 	vim.fn.jobstart(command, {
 		on_stdout = function(_, data, _)
