@@ -27,7 +27,6 @@ local function create_floating_term(config)
 		col = 0
 		row = math.floor((vim.o.lines - height) / 2)
 	elseif position == "custom" then
-		-- Handle custom positions with default values if not provided
 		col = window_configs.custom_col or math.floor((vim.o.columns - width) / 2)
 		row = window_configs.custom_row or math.floor((vim.o.lines - height) / 2)
 	else
@@ -35,7 +34,6 @@ local function create_floating_term(config)
 		return
 	end
 
-	-- Ensure col and row are integers
 	col = col or 0
 	row = row or 0
 
@@ -53,67 +51,20 @@ local function create_floating_term(config)
 
 	-- Apply transparency settings
 	local transparent = window_configs.transparent or false
-
-	-- Set transparency (winblend)
 	vim.api.nvim_set_option_value("winblend", (not transparent) and 20 or 0, { scope = "local" })
-
-	-- Set window highlight groups to ensure no transparency
 	vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:Normal", { scope = "local" })
+	vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+	vim.api.nvim_set_hl(0, "FloatBorder", { fg = "none" })
 
 	return buf
 end
 
-local function run_code()
-	local ft = vim.bo.filetype
-	local filename = vim.fn.expand("%:p") -- Get the full path of the current file
-	local command
-
-	if ft == "c" then
-		command = "gcc -o temp " .. filename .. " && ./temp"
-	elseif ft == "cpp" then
-		command = "g++ -o temp " .. filename .. " && ./temp"
-	else
-		vim.api.nvim_err_writeln("Unsupported filetype: " .. ft)
-		return
-	end
-
-	-- Get user-defined configuration
-	local config = vim.g.runTA_config or {}
-
-	local buf = create_floating_term(config)
-
-	if not buf then
-		return
-	end
-
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:" })
-
-	vim.fn.jobstart(command, {
-		on_stdout = function(_, data, _)
-			if data then
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
-			end
-		end,
-		on_stderr = function(_, data, _)
-			if data then
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
-			end
-		end,
-		on_exit = function(_, code, _)
-			if code == 0 then
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Execution finished successfully" })
-			else
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Execution failed with code " .. code })
-			end
-		end,
-		stdout_buffered = true,
-		stderr_buffered = true,
-	})
-end
-
 function M.setup(config)
 	vim.g.runTA_config = config or {}
-	vim.api.nvim_create_user_command("RunCode", run_code, {})
+end
+
+function M.create_floating_term(config)
+	return create_floating_term(config)
 end
 
 return M

@@ -1,4 +1,4 @@
-local runTA = require("runTA.commands")
+local runTA = require("runTA")
 
 local function setup_runTA()
 	runTA.setup({
@@ -8,7 +8,6 @@ local function setup_runTA()
 			position = "center", -- Default position (can be "center", "top", "bottom", "left", "right", "custom")
 			custom_col = nil, -- Column position for custom placement (optional)
 			custom_row = nil, -- Row position for custom placement (optional)
-
 			transparent = false, -- true for a transparent background
 		},
 	})
