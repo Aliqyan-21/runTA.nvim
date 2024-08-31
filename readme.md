@@ -101,3 +101,5 @@ runTA.nvim is licensed under the MIT License.
 ## Acknowledgements
 
 Special thanks to Neovim for providing a powerful and extensible platform such as this.
+
+And parents -> TA are the initials of my mom and dad.
