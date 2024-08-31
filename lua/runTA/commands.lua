@@ -75,7 +75,29 @@ local function run_code()
 	elseif ft == "python" then
 		command = "python " .. filename
 	elseif ft == "java" then
-		command = "java " .. filename
+		command = "javac " .. filename .. " && java " .. vim.fn.fnamemodify(filename, ":r")
+	elseif ft == "javascript" then
+		command = "node " .. filename
+	elseif ft == "typescript" then
+		command = "node " .. filename
+	elseif ft == "ruby" then
+		command = "ruby " .. filename
+	elseif ft == "lua" then
+		command = "lua " .. filename
+	elseif ft == "go" then
+		command = "go run " .. filename
+	elseif ft == "rust" then
+		command = "rustc -o temp " .. filename .. " && ./main"
+	elseif ft == "bash" then
+		command = "bash " .. filename
+	elseif ft == "r" then
+		command = "Rscript " .. filename
+	elseif ft == "swift" then
+		command = "swift " .. filename
+	elseif ft == "haskell" then
+		command = "runhaskell " .. filename
+	elseif ft == "kotlin" then
+		command = "kotlinc " .. filename .. " -include-runtime -d temp.jar && java -jar temp.jar"
 	else
 		vim.api.nvim_err_writeln("Unsupported filetype: " .. ft)
 		return
