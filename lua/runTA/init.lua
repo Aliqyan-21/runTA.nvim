@@ -9,9 +9,7 @@ local function setup_runTA()
 			custom_col = nil, -- Column position for custom placement (optional)
 			custom_row = nil, -- Row position for custom placement (optional)
 
-			-- Transparency settings
-			transparent = false, -- Set to true for a transparent background
-			transparency = 0, -- Transparency level (0-100), where 0 is fully transparent and 100 is fully opaque
+			transparent = false, -- true for a transparent background
 		},
 	})
 end
