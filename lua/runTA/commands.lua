@@ -52,20 +52,15 @@ local function create_floating_term(config)
 	})
 
 	-- Apply background color, border color, and transparency
-	local bg_color = window_configs.bg_color or "None" -- Default to "None" for transparent
-	local border_color = window_configs.border_color or "None" -- Default to "None"
+	local bg_color = window_configs.bg_color or "None"
+	local border_color = window_configs.border_color or "None"
 	local transparency = window_configs.transparency or 0
 
 	-- Set transparency (winblend)
 	vim.api.nvim_set_option_value("winblend", transparency, { scope = "local" })
 
 	-- Set highlight groups
-	if bg_color ~= "None" then
-		vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
-	else
-		-- Ensure transparency if bg_color is "None"
-		vim.api.nvim_set_hl(0, "FloatingWindow", { bg = "none" })
-	end
+	vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
 	if border_color ~= "None" then
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = border_color })
 	end
@@ -108,20 +103,22 @@ local function run_code()
 	vim.fn.jobstart(command, {
 		on_stdout = function(_, data, _)
 			if data then
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
+				-- Split data into lines and set them in the buffer
+				local lines = type(data) == "string" and vim.split(data, "\n") or data
+				vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
 			end
 		end,
 		on_stderr = function(_, data, _)
 			if data then
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, data)
+				-- Split data into lines and set them in the buffer
+				local lines = type(data) == "string" and vim.split(data, "\n") or data
+				vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
 			end
 		end,
 		on_exit = function(_, code, _)
-			if code == 0 then
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Execution finished successfully" })
-			else
-				vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Execution failed with code " .. code })
-			end
+			local exit_message = code == 0 and "Execution finished successfully"
+				or "Execution failed with code " .. code
+			vim.api.nvim_buf_set_lines(buf, -1, -1, false, { exit_message })
 		end,
 		stdout_buffered = true,
 		stderr_buffered = true,
