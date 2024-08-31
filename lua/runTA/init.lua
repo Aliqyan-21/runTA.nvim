@@ -1,4 +1,4 @@
-local runTA = require("runTA")
+local runTA = require("runTA.runTA")
 
 local function setup_runTA()
 	runTA.setup({
