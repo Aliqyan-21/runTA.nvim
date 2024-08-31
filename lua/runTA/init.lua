@@ -11,7 +11,7 @@ local function setup_runTA()
 
 			bg_color = "Normal", -- Background color (e.g., "Normal", "None" for transparent)
 			border_color = "None", -- Border color (e.g., "Normal", "None" for no color)
-			transparency = nil, -- Transparency (set a value between 0-100)
+			transparency = 0, -- Transparency (set a value between 0-100)
 		},
 	})
 end
