@@ -1,8 +1,7 @@
-local commands = require("runTA.commands")
-local runner = require("runTA.runner")
+local runTA = require("runTA.commands")
 
 local function setup_runTA()
-	commands.setup({
+	runTA.setup({
 		output_window_configs = {
 			width = 80, -- Default width of the floating window
 			height = 20, -- Default height of the floating window
@@ -13,8 +12,6 @@ local function setup_runTA()
 			transparent = false, -- true for a transparent background
 		},
 	})
-
-	runner.setup()
 end
 
 setup_runTA()
