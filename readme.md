@@ -19,6 +19,8 @@ Say goodbye to context-switching and hello to uninterrupted productivity! `runTA
 - **Languages Currently Supported**:
   - c
   - c++
+  - Python
+  - Java
 
 ## Installation
 

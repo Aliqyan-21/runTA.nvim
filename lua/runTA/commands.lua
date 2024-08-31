@@ -75,7 +75,7 @@ local function run_code()
 	elseif ft == "python" then
 		command = "python " .. filename
 	elseif ft == "java" then
-		command = "javac " .. filename .. " && java " .. vim.fn.fnamemodify(filename, ":r")
+		command = "java " .. filename
 	elseif ft == "javascript" then
 		command = "node " .. filename
 	elseif ft == "typescript" then
