@@ -30,7 +30,7 @@ local function create_floating_term(config)
 		row = config.custom_row or math.floor((vim.o.lines - height) / 2)
 	else
 		vim.api.nvim_err_writeln("Invalid position: " .. position)
-		return
+		return nil
 	end
 
 	-- Ensure col and row are valid integers
@@ -39,6 +39,11 @@ local function create_floating_term(config)
 
 	-- Create the floating terminal window
 	local buf = vim.api.nvim_create_buf(false, true)
+	if not buf then
+		vim.api.nvim_err_writeln("Failed to create buffer")
+		return nil
+	end
+
 	vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
 		width = width,
@@ -66,9 +71,14 @@ local function run_code()
 		return
 	end
 
+	-- Get user-defined configuration
 	local config = vim.g.runTA_config or {}
 
 	local buf = create_floating_term(config)
+	if not buf then
+		return
+	end
+
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Running code..." })
 
 	vim.fn.jobstart(command, {
