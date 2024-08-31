@@ -91,7 +91,6 @@ local function run_code()
 	end
 
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:" })
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "" })
 
 	vim.fn.jobstart(command, {
 		on_stdout = function(_, data, _)
