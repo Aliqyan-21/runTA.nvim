@@ -81,7 +81,9 @@ end
 
 ## Usage
 
-With runTA.nvim, running your code is as simple as executing a command. Just use `:RunCode` in Neovim or set keymap to trigger the command, and watch as your code runs in the floating terminal window with all output displayed right where you need it!
+1. **`:RunCode`:** running your code is as simple as executing a command. Just use `:RunCode` in Neovim or set keymap to trigger the command, and watch as your code runs in the floating terminal window with all output displayed right where you need it!
+2. **`:ReopenLastOutput`:** this function opens up the recent executed code output.
+3. **`Output Window`:** you can go through your code with vim bindings and copy any errors and stuff with vim bindings and press `q` to exit!
 
 ## Contribution
 
