@@ -74,6 +74,8 @@ local function run_code()
 		command = "g++ -o temp " .. filename .. " && ./temp"
 	elseif ft == "python" then
 		command = "python " .. filename
+	elseif ft == "java" then
+		command = "java " .. filename
 	else
 		vim.api.nvim_err_writeln("Unsupported filetype: " .. ft)
 		return
@@ -88,7 +90,7 @@ local function run_code()
 		return
 	end
 
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:" })
+	-- vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Code Output:" })
 
 	vim.fn.jobstart(command, {
 		on_stdout = function(_, data, _)
