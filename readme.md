@@ -16,7 +16,7 @@ Say goodbye to context-switching and hello to uninterrupted productivity! `runTA
 - **Transparency Options**: Create a distraction-free coding environment with optional transparency settings for the floating window. Focus on your code, not on unnecessary distractions.
 - **Automatic Language Detection**: It automatically detects the language of current buffer and run code accordingly.
 
-![video](https://github.com/user-attachments/assets/9dfa9236-a602-413c-b065-1e575221e181)
+https://github.com/user-attachments/assets/9dfa9236-a602-413c-b065-1e575221e181
 
 - **Languages Currently Supported**:
   - c
