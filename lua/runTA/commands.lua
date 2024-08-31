@@ -41,7 +41,7 @@ local function create_floating_term(config)
 
 	-- Create the floating terminal window
 	local buf = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_open_win(buf, true, {
+	local win = vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
 		width = width,
 		height = height,
@@ -60,17 +60,16 @@ local function create_floating_term(config)
 	vim.api.nvim_set_option_value("winblend", transparency, { scope = "local" })
 
 	-- Set highlight groups
-	vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
+	if bg_color ~= "None" then
+		vim.api.nvim_set_hl(0, "FloatingWindow", { bg = bg_color })
+	end
 	if border_color ~= "None" then
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = border_color })
 	end
 
 	-- Apply highlights to the floating window
-	vim.api.nvim_set_option_value(
-		"winhighlight",
-		"Normal:FloatingWindow,FloatBorder:" .. (border_color ~= "None" and border_color or "Normal"),
-		{ scope = "local" }
-	)
+	local winhighlight = "Normal:FloatingWindow,FloatBorder:" .. (border_color ~= "None" and border_color or "Normal")
+	vim.api.nvim_set_option_value("winhighlight", winhighlight, { scope = "local" })
 
 	return buf
 end
