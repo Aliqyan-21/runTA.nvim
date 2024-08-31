@@ -72,6 +72,8 @@ local function run_code()
 		command = "gcc -o temp " .. filename .. " && ./temp"
 	elseif ft == "cpp" then
 		command = "g++ -o temp " .. filename .. " && ./temp"
+	elseif ft == "python" then
+		command = "python " .. filename
 	else
 		vim.api.nvim_err_writeln("Unsupported filetype: " .. ft)
 		return
