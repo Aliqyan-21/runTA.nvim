@@ -4,9 +4,6 @@ local runner = require("runTA.runner")
 local M = {}
 
 local function setup(config)
-	-- config table
-	config = config or {}
-
 	-- Set up commands with the provided configuration
 	commands.setup(config)
 
