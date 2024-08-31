@@ -1,5 +1,3 @@
-local commands = require("runTA.commands")
-
 local M = {}
 
 local function run_code()
@@ -17,7 +15,7 @@ local function run_code()
 	end
 
 	local config = vim.g.runTA_config or {}
-	local buf = commands.create_floating_term(config)
+	local buf = require("runTA.commands").create_floating_term(config)
 
 	if not buf then
 		return
