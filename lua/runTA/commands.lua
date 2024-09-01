@@ -1,19 +1,20 @@
 local M = {}
 
--- Store the buffer and window IDs globally for reopen later
+-- Store the buffer and window IDs globally for reopening window
 local output_buf = nil
 local output_win = nil
 
--- Function to focus the floating window
-local function focus_floating_win()
+-- Function to focus the window
+local function focus_window()
 	if output_win and vim.api.nvim_win_is_valid(output_win) then
 		vim.api.nvim_set_current_win(output_win)
 		vim.api.nvim_command("stopinsert") -- Exit insert mode to focus
 	else
-		vim.api.nvim_err_writeln("Floating window is not valid.")
+		vim.api.nvim_err_writeln("Window is not valid.")
 	end
 end
 
+-- Function to create a floating terminal window
 local function create_floating_term(config)
 	config = config or {}
 	local window_configs = config.output_window_configs or {}
@@ -81,6 +82,73 @@ local function create_floating_term(config)
 	return buf, win
 end
 
+-- Function to create a pane window
+local function create_pane_window(config)
+	config = config or {}
+	local window_configs = config.output_window_configs or {}
+	local height = window_configs.height or 10
+
+	-- Create a new buffer
+	local buf = vim.api.nvim_create_buf(false, true)
+	-- Create a horizontal split at the bottom
+	vim.cmd("botright split")
+	vim.api.nvim_win_set_height(0, height)
+	local win = vim.api.nvim_get_current_win()
+	vim.api.nvim_win_set_buf(win, buf)
+
+	return buf, win
+end
+
+-- Function to create a split window
+local function create_split_window(config)
+	config = config or {}
+	local window_configs = config.output_window_configs or {}
+	local width = window_configs.width or 40
+
+	-- Create a new buffer
+	local buf = vim.api.nvim_create_buf(false, true)
+	-- Create a vertical split
+	vim.cmd("vsplit")
+	vim.api.nvim_win_set_width(0, width)
+	local win = vim.api.nvim_get_current_win()
+	vim.api.nvim_win_set_buf(win, buf)
+
+	return buf, win
+end
+
+-- Function to create a tab window
+local function create_tab_window(config)
+	config = config or {}
+
+	-- Create a new buffer
+	local buf = vim.api.nvim_create_buf(false, true)
+	-- Create a new tab
+	vim.cmd("tabnew")
+	local win = vim.api.nvim_get_current_win()
+	vim.api.nvim_win_set_buf(win, buf)
+
+	return buf, win
+end
+
+-- Function to create the output window based on the configured type
+local function create_output_window(config)
+	local window_type = config.output_window_type or "floating"
+
+	if window_type == "floating" then
+		return create_floating_term(config)
+	elseif window_type == "pane" then
+		return create_pane_window(config)
+	elseif window_type == "tab" then
+		return create_tab_window(config)
+	elseif window_type == "split" then
+		return create_split_window(config)
+	else
+		vim.api.nvim_err_writeln("Unsupported window type: " .. window_type)
+		return nil, nil
+	end
+end
+
+-- Function to run the code in the output window
 local function run_code()
 	local ft = vim.bo.filetype
 	local filename = vim.fn.expand("%:p") -- Get the full path of the current file
@@ -112,7 +180,7 @@ local function run_code()
 
 	local config = vim.g.runTA_config or {}
 
-	output_buf, output_win = create_floating_term(config)
+	output_buf, output_win = create_output_window(config)
 
 	if not output_buf then
 		return
@@ -127,7 +195,7 @@ local function run_code()
 				vim.api.nvim_buf_set_lines(output_buf, -1, -1, false, { result_msg })
 				vim.bo[output_buf].modifiable = false
 			end
-			focus_floating_win()
+			focus_window()
 		end,
 	})
 
@@ -136,52 +204,30 @@ local function run_code()
 	vim.api.nvim_buf_set_keymap(output_buf, "n", "q", ":q<CR>", { noremap = true, silent = true })
 
 	vim.cmd([[
-		augroup RunTA
-			autocmd!
-			autocmd BufLeave <buffer> stopinsert
-		augroup END
-	]])
+        augroup RunTA
+            autocmd!
+            autocmd BufLeave <buffer> stopinsert
+        augroup END
+    ]])
 end
 
+-- Function to reopen the last output window
 local function reopen_last_output()
 	if output_buf and vim.api.nvim_buf_is_valid(output_buf) then
 		if output_win and vim.api.nvim_win_is_valid(output_win) then
-			local win_width = vim.api.nvim_win_get_width(output_win)
-			local win_height = vim.api.nvim_win_get_height(output_win)
-			local win_position = vim.api.nvim_win_get_position(output_win)
-
-			vim.api.nvim_open_win(output_buf, true, {
-				relative = "editor",
-				width = win_width,
-				height = win_height,
-				col = win_position[2],
-				row = win_position[1],
-				style = "minimal",
-				border = "rounded",
-				focusable = true,
-			})
+			vim.api.nvim_set_current_win(output_win)
 		else
-			local width = 80
-			local height = 20
-			local col = math.floor((vim.o.columns - width) / 2)
-			local row = math.floor((vim.o.lines - height) / 2)
-
-			output_win = vim.api.nvim_open_win(output_buf, true, {
-				relative = "editor",
-				width = width,
-				height = height,
-				col = col,
-				row = row,
-				style = "minimal",
-				border = "rounded",
-				focusable = true,
-			})
+			output_win = create_output_window(vim.g.runTA_config)
+			if output_win then
+				vim.api.nvim_set_current_win(output_win)
+			end
 		end
 	else
 		vim.api.nvim_err_writeln("No previous output to display.")
 	end
 end
 
+-- Setup function for the plugin
 function M.setup(config)
 	vim.g.runTA_config = config or {}
 	vim.api.nvim_create_user_command("RunCode", run_code, {})
