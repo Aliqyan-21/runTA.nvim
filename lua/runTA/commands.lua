@@ -1,6 +1,6 @@
 local M = {}
 
--- Store the buffer and window IDs globally to reopen later
+-- Store the buffer and window IDs globally for reopen later
 local output_buf = nil
 local output_win = nil
 
@@ -8,7 +8,6 @@ local output_win = nil
 local function focus_floating_win()
 	if output_win and vim.api.nvim_win_is_valid(output_win) then
 		vim.api.nvim_set_current_win(output_win)
-		-- Set the window to accept input
 		vim.api.nvim_command("stopinsert") -- Exit insert mode to focus
 	else
 		vim.api.nvim_err_writeln("Floating window is not valid.")
@@ -26,35 +25,43 @@ local function create_floating_term(config)
 	local col, row
 
 	-- Calculate the position for the floating window
-	if position == "center" then
-		col = math.floor((vim.o.columns - width) / 2)
-		row = math.floor((vim.o.lines - height) / 2)
-	elseif position == "bottom" then
-		col = math.floor((vim.o.columns - width) / 2)
-		row = vim.o.lines - height - 1
-	elseif position == "top" then
-		col = math.floor((vim.o.columns - width) / 2)
-		row = 0
-	elseif position == "right" then
-		col = vim.o.columns - width - 1
-		row = math.floor((vim.o.lines - height) / 2)
-	elseif position == "left" then
-		col = 0
-		row = math.floor((vim.o.lines - height) / 2)
-	elseif position == "custom" then
-		-- Handle custom positions with default values if not provided
-		col = window_configs.custom_col or math.floor((vim.o.columns - width) / 2)
-		row = window_configs.custom_row or math.floor((vim.o.lines - height) / 2)
+	local positions = {
+		center = function()
+			col = math.floor((vim.o.columns - width) / 2)
+			row = math.floor((vim.o.lines - height) / 2)
+		end,
+		bottom = function()
+			col = math.floor((vim.o.columns - width) / 2)
+			row = vim.o.lines - height - 1
+		end,
+		top = function()
+			col = math.floor((vim.o.columns - width) / 2)
+			row = 0
+		end,
+		right = function()
+			col = vim.o.columns - width - 1
+			row = math.floor((vim.o.lines - height) / 2)
+		end,
+		left = function()
+			col = 0
+			row = math.floor((vim.o.lines - height) / 2)
+		end,
+		custom = function()
+			col = window_configs.custom_col or math.floor((vim.o.columns - width) / 2)
+			row = window_configs.custom_row or math.floor((vim.o.lines - height) / 2)
+		end,
+	}
+
+	if positions[position] then
+		positions[position]()
 	else
 		vim.api.nvim_err_writeln("Invalid position: " .. position)
 		return
 	end
 
-	-- Ensure col and row are integers
 	col = col or 0
 	row = row or 0
 
-	-- Create the floating terminal window
 	local buf = vim.api.nvim_create_buf(false, true)
 	local win = vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
@@ -64,10 +71,9 @@ local function create_floating_term(config)
 		row = row,
 		style = "minimal",
 		border = "rounded",
-		focusable = true, -- Make the window focusable
+		focusable = true,
 	})
 
-	-- Apply transparency settings
 	local transparent = window_configs.transparent or false
 	vim.api.nvim_set_option_value("winblend", (not transparent) and 20 or 0, { scope = "local" })
 	vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:Normal", { scope = "local" })
@@ -78,80 +84,57 @@ end
 local function run_code()
 	local ft = vim.bo.filetype
 	local filename = vim.fn.expand("%:p") -- Get the full path of the current file
-	local command
 
-	if ft == "c" then
-		command = "gcc -o temp " .. filename .. " && ./temp"
-	elseif ft == "cpp" then
-		command = "g++ -o temp " .. filename .. " && ./temp"
-	elseif ft == "python" then
-		command = "python " .. filename
-	elseif ft == "java" then
-		command = "java " .. filename
-	elseif ft == "javascript" then
-		command = "node " .. filename
-	elseif ft == "typescript" then
-		command = "node " .. filename
-	elseif ft == "ruby" then
-		command = "ruby " .. filename
-	elseif ft == "lua" then
-		command = "lua " .. filename
-	elseif ft == "go" then
-		command = "go run " .. filename
-	elseif ft == "rust" then
-		command = "rustc -o temp " .. filename .. " && ./temp"
-	elseif ft == "sh" then
-		command = "bash " .. filename
-	elseif ft == "r" then
-		command = "Rscript " .. filename
-	elseif ft == "swift" then
-		command = "swift " .. filename
-	elseif ft == "haskell" then
-		command = "runhaskell " .. filename
-	elseif ft == "kotlin" then
-		command = "kotlinc " .. filename .. " -include-runtime -d temp.jar && java -jar temp.jar"
-	else
+	local command_map = {
+		c = "gcc -o temp " .. filename .. " && ./temp",
+		cpp = "g++ -o temp " .. filename .. " && ./temp",
+		python = "python " .. filename,
+		java = "java " .. filename,
+		javascript = "node " .. filename,
+		typescript = "node " .. filename,
+		ruby = "ruby " .. filename,
+		lua = "lua " .. filename,
+		go = "go run " .. filename,
+		rust = "rustc -o temp " .. filename .. " && ./temp",
+		sh = "bash " .. filename,
+		r = "Rscript " .. filename,
+		swift = "swift " .. filename,
+		haskell = "runhaskell " .. filename,
+		kotlin = "kotlinc " .. filename .. " -include-runtime -d temp.jar && java -jar temp.jar",
+	}
+
+	local command = command_map[ft]
+
+	if not command then
 		vim.api.nvim_err_writeln("Unsupported filetype: " .. ft)
 		return
 	end
 
-	-- Get user-defined configuration
 	local config = vim.g.runTA_config or {}
 
-	-- Create or reuse the floating terminal window
 	output_buf, output_win = create_floating_term(config)
 
 	if not output_buf then
 		return
 	end
 
-	-- Open a terminal and run the command interactively
 	vim.fn.termopen(command, {
 		on_exit = function(_, code, _)
 			if vim.api.nvim_buf_is_valid(output_buf) then
-				-- Ensure buffer is modifiable before setting lines
 				vim.bo[output_buf].modifiable = true
-				if code == 0 then
-					vim.api.nvim_buf_set_lines(output_buf, -1, -1, false, { "Execution finished successfully" })
-				else
-					vim.api.nvim_buf_set_lines(output_buf, -1, -1, false, { "Execution failed with code " .. code })
-				end
-				-- Make buffer read-only again
+				local result_msg = code == 0 and "Execution finished successfully"
+					or "Execution failed with code " .. code
+				vim.api.nvim_buf_set_lines(output_buf, -1, -1, false, { result_msg })
 				vim.bo[output_buf].modifiable = false
 			end
-			-- Focus the floating window after code execution
 			focus_floating_win()
 		end,
 	})
 
-	-- Switch the terminal to normal mode after execution
 	vim.cmd("startinsert!")
 
-	-- Key mapping to quit the window
 	vim.api.nvim_buf_set_keymap(output_buf, "n", "q", ":q<CR>", { noremap = true, silent = true })
 
-	-- Optionally, avoid closing the window on Esc or other key presses
-	-- Set autocmd to prevent unwanted window closure
 	vim.cmd([[
 		augroup RunTA
 			autocmd!
@@ -160,16 +143,13 @@ local function run_code()
 	]])
 end
 
--- Reopen the floating terminal to view the last output
 local function reopen_last_output()
 	if output_buf and vim.api.nvim_buf_is_valid(output_buf) then
-		-- Ensure output_win is valid
 		if output_win and vim.api.nvim_win_is_valid(output_win) then
 			local win_width = vim.api.nvim_win_get_width(output_win)
 			local win_height = vim.api.nvim_win_get_height(output_win)
 			local win_position = vim.api.nvim_win_get_position(output_win)
 
-			-- Reopen the window using the previous dimensions and position
 			vim.api.nvim_open_win(output_buf, true, {
 				relative = "editor",
 				width = win_width,
@@ -178,10 +158,9 @@ local function reopen_last_output()
 				row = win_position[1],
 				style = "minimal",
 				border = "rounded",
-				focusable = true, -- Ensure the window is focusable
+				focusable = true,
 			})
 		else
-			-- Handle the case where output_win is nil or invalid
 			local width = 80
 			local height = 20
 			local col = math.floor((vim.o.columns - width) / 2)
@@ -195,7 +174,7 @@ local function reopen_last_output()
 				row = row,
 				style = "minimal",
 				border = "rounded",
-				focusable = true, -- Ensure the window is focusable
+				focusable = true,
 			})
 		end
 	else
