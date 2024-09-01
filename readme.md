@@ -11,10 +11,11 @@ Say goodbye to context-switching and hello to uninterrupted productivity! `runTA
 
 ## Key Features
 
-- **Seamless Code Execution**: Run your code in a sleek floating terminal window without ever leaving Neovim. Your output is always at your fingertips!
-- **Customizable Floating Terminal**: Tailor the floating terminal to fit your workflow with configurable size, position and transparency settings. Choose from center, top, bottom, left, right, or even custom placements!
-- **Transparency Options**: Create a distraction-free coding environment with optional transparency settings for the floating window. Focus on your code, not on unnecessary distractions.
-- **Automatic Language Detection**: It automatically detects the language of current buffer and run code accordingly.
+- **Seamless Code Execution**
+- **Customizable Terminal**
+- **Transparency Options**
+- **Automatic Language Detection**
+- **Various Window Types - floating, pane, tab, split**
 
 ## Sound ON
 
@@ -69,8 +70,9 @@ Customize runTA.nvim to fit your needs by adding the following configuration to 
 
 ```lua
 runTA.setup({
-    output_window_configs = {
+    output_window_type = "floating", -- floating, pane, tab, split
 
+    output_window_configs = {
     width = 80, -- Width of the floating window
     height = 20, -- Height of the floating window
     position = "center", -- Position of the floating window ("center", "top", "bottom", "left", "right", "custom")
