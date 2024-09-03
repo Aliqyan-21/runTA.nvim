@@ -211,15 +211,47 @@ local function run_code()
     ]])
 end
 
--- Function to reopen the last output window
 local function reopen_last_output()
 	if output_buf and vim.api.nvim_buf_is_valid(output_buf) then
 		if output_win and vim.api.nvim_win_is_valid(output_win) then
 			vim.api.nvim_set_current_win(output_win)
 		else
-			output_win = create_output_window(vim.g.runTA_config)
-			if output_win then
+			local config = vim.g.runTA_config or {}
+			local window_type = config.output_window_type or "floating"
+
+			if window_type == "floating" then
+				output_win = vim.api.nvim_open_win(output_buf, true, {
+					relative = "editor",
+					width = config.output_window_configs.width or 80,
+					height = config.output_window_configs.height or 20,
+					col = config.output_window_configs.col or 0,
+					row = config.output_window_configs.row or 0,
+					style = "minimal",
+					border = "rounded",
+					focusable = true,
+				})
+			elseif window_type == "pane" then
+				vim.cmd("botright split")
+				vim.api.nvim_win_set_height(0, config.output_window_configs.height or 10)
+				output_win = vim.api.nvim_get_current_win()
+			elseif window_type == "tab" then
+				vim.cmd("tabnew")
+				output_win = vim.api.nvim_get_current_win()
+			elseif window_type == "split" then
+				vim.cmd("vsplit")
+				vim.api.nvim_win_set_width(0, config.output_window_configs.width or 40)
+				output_win = vim.api.nvim_get_current_win()
+			else
+				vim.api.nvim_err_writeln("Unsupported window type: " .. window_type)
+				return
+			end
+
+			if output_win and vim.api.nvim_win_is_valid(output_win) then
+				vim.api.nvim_win_set_buf(output_win, output_buf)
 				vim.api.nvim_set_current_win(output_win)
+				vim.api.nvim_command("stopinsert") -- Exit insert mode to focus
+			else
+				vim.api.nvim_err_writeln("Failed to reopen the last output window.")
 			end
 		end
 	else
@@ -227,7 +259,6 @@ local function reopen_last_output()
 	end
 end
 
--- Setup function for the plugin
 function M.setup(config)
 	vim.g.runTA_config = config or {}
 	vim.api.nvim_create_user_command("RunCode", run_code, {})
